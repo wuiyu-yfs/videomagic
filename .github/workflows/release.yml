@@ -48,6 +48,7 @@ jobs:
           npm approve-scripts 7zip-bin
           npm approve-scripts electron
           npm approve-scripts esbuild
+          npm install 7zip-bin --force
         timeout-minutes: 15
 
       - name: Build shared module
