@@ -9,7 +9,7 @@ import {
   parseProgress,
   timeToSeconds,
   VideoInfo,
-} from '../packages/shared/src';
+} from '@video-converter/shared';
 
 let mainWindow: BrowserWindow | null = null;
 

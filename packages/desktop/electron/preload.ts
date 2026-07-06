@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { ConversionOptions, VideoInfo } from '../packages/shared/src';
+import { ConversionOptions, VideoInfo } from '@video-converter/shared';
 
 export interface ElectronAPI {
   selectFile: () => Promise<string | null>;

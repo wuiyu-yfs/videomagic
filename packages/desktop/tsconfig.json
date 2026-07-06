@@ -3,8 +3,12 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "outDir": "./dist",
-    "rootDir": "./src",
-    "types": ["vite/client"]
+    "rootDir": ".",
+    "types": ["vite/client"],
+    "baseUrl": ".",
+    "paths": {
+      "@video-converter/shared": ["../shared/src"]
+    }
   },
-  "include": ["src"]
+  "include": ["src", "electron"]
 }
