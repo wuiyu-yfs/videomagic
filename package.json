@@ -6,6 +6,14 @@
   "workspaces": [
     "packages/*"
   ],
+  "allowScripts": {
+    "7zip-bin": true,
+    "electron": true,
+    "esbuild": true,
+    "app-builder-bin": true,
+    "builder-util": true,
+    "electron-builder": true
+  },
   "scripts": {
     "dev:desktop": "npm run dev -w @video-converter/desktop",
     "dev:mobile": "npm run start -w @video-converter/mobile",
