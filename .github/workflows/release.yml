@@ -46,8 +46,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install
-          npx electron-builder install-app-deps
+          NPM_CONFIG_ALLOW_SCRIPTS=true npm install
         timeout-minutes: 15
 
       - name: Build shared module
