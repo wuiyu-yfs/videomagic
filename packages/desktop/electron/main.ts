@@ -103,7 +103,7 @@ ipcMain.handle('get-video-info', async (_event, filePath: string): Promise<Video
         filename: path.basename(filePath),
         format: metadata.format.format_name || '',
         duration: metadata.format.duration || 0,
-        size: parseInt(metadata.format.size || '0', 10),
+        size: parseInt(String(metadata.format.size || '0'), 10),
         videoStream: videoStream
           ? {
               codec: videoStream.codec_name || '',
@@ -120,7 +120,7 @@ ipcMain.handle('get-video-info', async (_event, filePath: string): Promise<Video
           ? {
               codec: audioStream.codec_name || '',
               channels: audioStream.channels || 0,
-              sampleRate: parseInt(audioStream.sample_rate || '0', 10),
+              sampleRate: parseInt(String(audioStream.sample_rate || '0'), 10),
               bitrate: audioStream.bit_rate || '',
             }
           : undefined,
