@@ -47,7 +47,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
-          npm install 7zip-bin app-builder-bin --force
+          npm rebuild 7zip-bin app-builder-bin
         timeout-minutes: 15
 
       - name: Build shared module
