@@ -1,0 +1,192 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-desktop:
+    name: Build Desktop App
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install system dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg libarchive-tools imagemagick
+
+      - name: Install system dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install ffmpeg imagemagick
+
+      - name: Install system dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install ffmpeg imagemagick
+
+      - name: Generate icons
+        run: |
+          bash packages/desktop/build/generate-icons.sh packages/desktop/build
+        shell: bash
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build shared module
+        run: npm run build -w @video-converter/shared
+
+      - name: Build desktop app
+        run: npm run build -w @video-converter/desktop
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifacts (macOS)
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-converter-macos
+          path: |
+            packages/desktop/dist/*.dmg
+            packages/desktop/dist/*.zip
+
+      - name: Upload artifacts (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-converter-linux
+          path: |
+            packages/desktop/dist/*.AppImage
+            packages/desktop/dist/*.deb
+            packages/desktop/dist/*.rpm
+
+      - name: Upload artifacts (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: video-converter-windows
+          path: |
+            packages/desktop/dist/*.exe
+            packages/desktop/dist/*.msi
+
+  create-release:
+    name: Create Release
+    needs: build-desktop
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: video-converter-macos
+          path: ./artifacts/macos
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: video-converter-linux
+          path: ./artifacts/linux
+
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: video-converter-windows
+          path: ./artifacts/windows
+
+      - name: List artifacts
+        run: find ./artifacts -type f
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.ref_name }}
+          body: |
+            ## 🎬 Video Converter v${{ github.ref_name }}
+
+            基于 FFmpeg 的跨平台视频转换工具。
+
+            ### 📦 下载
+
+            **macOS**: `VideoConverter-${{ github.ref_name }}-mac.dmg`
+            **Linux**: `VideoConverter-${{ github.ref_name }}-linux.AppImage`
+            **Windows**: `VideoConverter-${{ github.ref_name }}-win.exe`
+
+            ### ✨ 功能特性
+
+            - 多格式支持 (MP4, AVI, MOV, MKV, WebM, FLV, WMV, M4V)
+            - H.264/H.265/VP9 视频编码
+            - AAC/MP3/Opus/Vorbis 音频编码
+            - 分辨率调整 (4K/2K/1080p/720p/480p/360p)
+            - CRF 质量控制 & 固定码率
+            - 9 档编码预设
+            - 帧率调整
+            - 实时转换进度
+            - 转换历史记录
+
+            ### 🚀 使用说明
+
+            1. 下载对应平台的安装包
+            2. 安装并启动应用
+            3. 选择视频文件
+            4. 设置转换参数
+            5. 点击开始转换
+
+            ### ⚠️ 注意
+
+            - 首次运行可能需要允许安全权限
+            - 确保系统已安装 FFmpeg (桌面端)
+
+            ### 📄 License
+
+            MIT
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Upload macOS assets to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ./artifacts/macos/*.dmg
+            ./artifacts/macos/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Upload Linux assets to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ./artifacts/linux/*.AppImage
+            ./artifacts/linux/*.deb
+            ./artifacts/linux/*.rpm
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Upload Windows assets to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ./artifacts/windows/*.exe
+            ./artifacts/windows/*.msi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
