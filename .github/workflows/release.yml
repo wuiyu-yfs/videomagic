@@ -20,6 +20,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
         env:
           ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
@@ -47,19 +48,14 @@ jobs:
       - name: Install dependencies
         run: npm install
         timeout-minutes: 15
-        env:
-          NPM_CONFIG_ALLOW_SCRIPTS: true
 
       - name: Build shared module
         run: npm run build -w @video-converter/shared
-        env:
-          NPM_CONFIG_ALLOW_SCRIPTS: true
 
       - name: Build desktop app
         run: npm run build -w @video-converter/desktop
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_ALLOW_SCRIPTS: true
 
       - name: Upload artifacts (macOS)
         if: matrix.os == 'macos-latest'
